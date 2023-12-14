@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import { RoomList } from "../pages/RoomList.tsx";
 import { Chat } from "../pages/Chat.tsx";
+import { NotFound } from "../pages/404.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -13,6 +14,6 @@ export const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <h1>404</h1>,
+    element: <NotFound />,
   },
 ]);
