@@ -1,13 +1,15 @@
-import { Hono } from 'hono'
+import { Hono } from "hono";
 
-const app = new Hono()
+const app = new Hono();e
 
-app.get('/', (c) => c.html(
-    <html>
-        <body>
-            <h1>Hello World</h1>
-        </body>
-    </html>)
-)
+app.get("/", (c) =>
+	c.html(
+		<html lang={"ja"}>
+			<body>
+				<h1>Hello World</h1>
+			</body>
+		</html>,
+	),
+);
 
-export default app
+export default app;
