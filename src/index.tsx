@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 
-const app = new Hono();e
+const app = new Hono();
 
 app.get("/", (c) =>
 	c.html(
