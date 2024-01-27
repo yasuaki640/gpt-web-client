@@ -1,3 +1,4 @@
+import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
@@ -5,7 +6,6 @@ import OpenAI from "openai";
 import { v4 as uuidv4 } from "uuid";
 import { openaiMiddleware } from "./openai";
 import { Rooms } from "./schema";
-import {eq} from "drizzle-orm";
 
 export type Bindings = {
 	USERNAME: string;
@@ -45,7 +45,11 @@ app.get("/", (c) =>
 
 app.get("/chats", async (c) => {
 	const db = drizzle(c.env.DB);
-	const rooms = await db.select().from(Rooms).all();
+	const rooms = await db
+		.select()
+		.from(Rooms)
+		.orderBy(desc(Rooms.roomUpdated))
+		.all();
 
 	return c.html(
 		<html lang={"ja"}>
@@ -91,7 +95,11 @@ app.get("/chats/:roomId", async (c) => {
 	const { roomId } = c.req.param();
 
 	const db = drizzle(c.env.DB);
-	const room = await db.select().from(Rooms).where(eq(Rooms.roomId, roomId)).get();
+	const room = await db
+		.select()
+		.from(Rooms)
+		.where(eq(Rooms.roomId, roomId))
+		.get();
 	if (!room) {
 		return c.html(
 			<html lang={"ja"}>
