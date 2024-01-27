@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const rooms = sqliteTable("rooms", {
+export const Rooms = sqliteTable("Rooms", {
 	roomId: text("roomId").primaryKey(),
 	roomCreated: text("roomCreated")
 		.notNull()

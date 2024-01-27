@@ -2,8 +2,10 @@ import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
 import OpenAI from "openai";
+import { v4 as uuidv4 } from "uuid";
 import { openaiMiddleware } from "./openai";
-import { rooms } from "./schema";
+import { Rooms } from "./schema";
+import {eq} from "drizzle-orm";
 
 export type Bindings = {
 	USERNAME: string;
@@ -41,31 +43,87 @@ app.get("/", (c) =>
 	),
 );
 
-app.get("/chat", async (c) => {
+app.get("/chats", async (c) => {
 	const db = drizzle(c.env.DB);
-	const res = await db.select().from(rooms).all();
-	// await db.insert(rooms).values({ roomId: "test" }).run();
-	console.log(res);
-	const chatCompletion = await c.var.openai.chat.completions.create({
-		messages: [{ role: "user", content: "Say this is a test" }],
-		model: "gpt-3.5-turbo",
-	});
+	const rooms = await db.select().from(Rooms).all();
 
 	return c.html(
 		<html lang={"ja"}>
 			<body>
-				<h1>{JSON.stringify(res)}</h1>
-				<ul>
-					{chatCompletion.choices.map((c) => (
-						<li>
-							{c.message.role} : {c.message.content}
-						</li>
+				<h1>Chat Rooms.</h1>
+				<a href={"/chats/new"}>New</a>
+				<table>
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Created</th>
+							<th>Updated</th>
+							<th>Link</th>
+						</tr>
+					</thead>
+					{rooms.map((room) => (
+						<tbody>
+							<tr>
+								<td>{room.roomId}</td>
+								<td>{room.roomCreated}</td>
+								<td>{room.roomUpdated}</td>
+								<td>
+									<a href={`/chats/${room.roomId}`}>Detail</a>
+								</td>
+							</tr>
+						</tbody>
 					))}
-				</ul>
-				<form action={"/chat"} method={"post"}>
-					<textarea id={"chat"} />
-					<button type={"submit"}>Send</button>
-				</form>
+				</table>
+			</body>
+		</html>,
+	);
+});
+
+app.get("/chats/new", async (c) => {
+	const roomId = uuidv4();
+	const db = drizzle(c.env.DB);
+	await db.insert(Rooms).values({ roomId }).execute();
+
+	return c.redirect(`/chats/${roomId}`);
+});
+
+app.get("/chats/:roomId", async (c) => {
+	const { roomId } = c.req.param();
+
+	const db = drizzle(c.env.DB);
+	const room = await db.select().from(Rooms).where(eq(Rooms.roomId, roomId)).get();
+	if (!room) {
+		return c.html(
+			<html lang={"ja"}>
+				<body>
+					<h1>Room Not Found.</h1>
+					<a href={"/chats"}>Back</a>
+				</body>
+			</html>,
+		);
+	}
+
+	return c.html(
+		<html lang={"ja"}>
+			<body>
+				<h1>{room.roomId}</h1>
+				<a href={"/chats"}>Back</a>
+				<table>
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Created</th>
+							<th>Updated</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>{room.roomId}</td>
+							<td>{room.roomCreated}</td>
+							<td>{room.roomUpdated}</td>
+						</tr>
+					</tbody>
+				</table>
 			</body>
 		</html>,
 	);
