@@ -10,3 +10,13 @@ export const Rooms = sqliteTable("Rooms", {
 		.notNull()
 		.default(sql.raw("CURRENT_TIMESTAMP")),
 });
+
+export const Messages = sqliteTable("messages", {
+	messageId: text("messageId").primaryKey(),
+	roomId: text("roomId").notNull(), // TODO 後で外部キー制約つける
+	sender: text("sender").notNull(),
+	message: text("message").notNull(),
+	messageCreated: text("messageCreated")
+		.notNull()
+		.default(sql.raw("CURRENT_TIMESTAMP")),
+});

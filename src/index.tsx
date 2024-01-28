@@ -5,7 +5,7 @@ import { basicAuth } from "hono/basic-auth";
 import OpenAI from "openai";
 import { v4 as uuidv4 } from "uuid";
 import { openaiMiddleware } from "./openai";
-import { Rooms } from "./schema";
+import { Messages, Rooms } from "./schema";
 
 export type Bindings = {
 	USERNAME: string;
@@ -38,6 +38,7 @@ app.get("/", (c) =>
 		<html lang={"ja"}>
 			<body>
 				<h1>Hello World</h1>
+				<a href={"/chats"}>Chats</a>
 			</body>
 		</html>,
 	),
@@ -111,6 +112,12 @@ app.get("/chats/:roomId", async (c) => {
 		);
 	}
 
+	const messages = await db
+		.select()
+		.from(Messages)
+		.where(eq(Messages.roomId, roomId))
+		.all();
+
 	return c.html(
 		<html lang={"ja"}>
 			<body>
@@ -132,6 +139,14 @@ app.get("/chats/:roomId", async (c) => {
 						</tr>
 					</tbody>
 				</table>
+				{messages.length === 0 && <p>No messages.</p>}
+				{messages.map((message) => (
+					<div>
+						<p>{message.messageCreated}</p>
+						<p>{message.sender}</p>
+						<p>{message.message}</p>
+					</div>
+				))}
 			</body>
 		</html>,
 	);
