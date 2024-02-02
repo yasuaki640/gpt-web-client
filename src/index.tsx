@@ -160,9 +160,9 @@ app.get("/chats/:roomId", async (c) => {
 
 app.post("/chats/:roomId", async (c) => {
 	const { roomId } = c.req.param();
-	const formData  = await c.req.formData();
-	const message = formData.get("message");
-	if (!message) {
+	const formData = await c.req.formData();
+	const newMessage = formData.get("message");
+	if (!(typeof newMessage === "string")) {
 		return c.redirect(`/chats/${roomId}`);
 	}
 
@@ -183,14 +183,36 @@ app.post("/chats/:roomId", async (c) => {
 		);
 	}
 
+	const messages = await db
+		.select()
+		.from(Messages)
+		.where(eq(Messages.roomId, roomId))
+		.all();
+
+	const rest = messages.map((m) => ({ role: m.sender, content: m.message }));
+
+	// @todo 後で型を治す、schemaの名称をopenaiクライアントに寄せたい
+	const res = await c.var.openai.chat.completions.create({
+		messages: [...rest, { role: "user", content: newMessage }],
+		model: "gpt-4-turbo-preview",
+	});
+
 	await db
 		.insert(Messages)
-		.values({
-			messageId: uuidv4(),
-			roomId,
-			sender: "user",
-			message,
-		})
+		.values([
+			{
+				messageId: uuidv4(),
+				roomId,
+				sender: "user",
+				message: newMessage,
+			},
+			{
+				messageId: uuidv4(),
+				roomId,
+				sender: "assistant",
+				message: res.choices[0].message.content || "",
+			},
+		])
 		.execute();
 
 	return c.redirect(`/chats/${roomId}`);
