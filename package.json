@@ -2,7 +2,8 @@
   "scripts": {
     "dev": "wrangler dev src/index.tsx",
     "deploy": "wrangler deploy --minify src/index.tsx",
-    "check": "npx @biomejs/biome check --apply ./src",
+    "biome-check": "npx @biomejs/biome check --apply ./src",
+    "type-check": "tsc",
     "generate": "drizzle-kit generate:sqlite --schema=src/schema.ts"
   },
   "dependencies": {
@@ -12,8 +13,9 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "typescript": "^5.3.3",
     "@biomejs/biome": "^1.5.3",
-    "@cloudflare/workers-types": "^4.20240117.0",
+    "@cloudflare/workers-types": "^4.20240129.0",
     "@types/uuid": "^9.0.8",
     "better-sqlite3": "^9.3.0",
     "drizzle-kit": "^0.20.13",
