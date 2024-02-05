@@ -197,6 +197,13 @@ app.post("/chats/:roomId", async (c) => {
 		model: "gpt-4-turbo-preview",
 	});
 
+	const assistantMessages = res.choices.map((c) => ({
+		messageId: uuidv4(),
+		roomId,
+		sender: "assistant",
+		message: c.message.content || "",
+	}));
+
 	await db
 		.insert(Messages)
 		.values([
@@ -206,12 +213,7 @@ app.post("/chats/:roomId", async (c) => {
 				sender: "user",
 				message: newMessage,
 			},
-			{
-				messageId: uuidv4(),
-				roomId,
-				sender: "assistant",
-				message: res.choices[0].message.content || "",
-			},
+			...assistantMessages,
 		])
 		.execute();
 
