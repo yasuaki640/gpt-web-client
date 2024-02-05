@@ -145,7 +145,7 @@ app.get("/chats/:roomId", async (c) => {
 					<div>
 						<p>{message.messageCreated}</p>
 						<p>{message.sender}</p>
-						<p>{message.message}</p>
+						<div style={{ whiteSpace: "pre-wrap" }}>{message.message}</div>
 						<hr />
 					</div>
 				))}
