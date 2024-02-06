@@ -3,6 +3,11 @@ import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
 import OpenAI from "openai";
+import rehypeSanitize from "rehype-sanitize";
+import rehypeStringify from "rehype-stringify";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import { unified } from "unified";
 import { v4 as uuidv4 } from "uuid";
 import { openaiMiddleware } from "./openai";
 import { Messages, Rooms } from "./schema";
@@ -92,6 +97,17 @@ app.get("/chats/new", async (c) => {
 	return c.redirect(`/chats/${roomId}`);
 });
 
+const toHtml = async (md: string) => {
+	const file = await unified()
+		.use(remarkParse)
+		.use(remarkRehype)
+		.use(rehypeSanitize)
+		.use(rehypeStringify)
+		.process(md);
+
+	return String(file);
+};
+
 app.get("/chats/:roomId", async (c) => {
 	const { roomId } = c.req.param();
 
@@ -118,6 +134,16 @@ app.get("/chats/:roomId", async (c) => {
 		.where(eq(Messages.roomId, roomId))
 		.all();
 
+	const messagesHtml = await Promise.all(
+		messages.map(async (message) => {
+			const html = await toHtml(message.message);
+			return {
+				...message,
+				message: html,
+			};
+		}),
+	);
+
 	return c.html(
 		<html lang={"ja"}>
 			<body>
@@ -140,12 +166,12 @@ app.get("/chats/:roomId", async (c) => {
 					</tbody>
 				</table>
 				<hr />
-				{messages.length === 0 && <p>No messages.</p>}
-				{messages.map((message) => (
+				{messagesHtml.length === 0 && <p>No messages.</p>}
+				{messagesHtml.map((message) => (
 					<div>
 						<p>{message.messageCreated}</p>
 						<p>{message.sender}</p>
-						<div style={{ whiteSpace: "pre-wrap" }}>{message.message}</div>
+						<div dangerouslySetInnerHTML={{ __html: message.message }} />
 						<hr />
 					</div>
 				))}
