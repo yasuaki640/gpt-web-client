@@ -3,6 +3,7 @@ import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const Rooms = sqliteTable("Rooms", {
 	roomId: text("roomId").primaryKey(),
+	roomTitle: text("roomTitle"),
 	roomCreated: text("roomCreated")
 		.notNull()
 		.default(sql.raw("CURRENT_TIMESTAMP")),
