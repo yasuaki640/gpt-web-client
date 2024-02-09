@@ -2,6 +2,7 @@
   "scripts": {
     "dev": "wrangler dev src/index.tsx",
     "deploy": "wrangler deploy --minify src/index.tsx",
+    "test": "vitest run",
     "biome-check": "npx @biomejs/biome check --apply ./src",
     "type-check": "tsc",
     "generate": "drizzle-kit generate:sqlite --schema=src/schema.ts"
@@ -24,6 +25,7 @@
     "better-sqlite3": "^9.3.0",
     "drizzle-kit": "^0.20.13",
     "typescript": "^5.3.3",
+    "vitest": "^1.2.2",
     "wrangler": "^3.25.0"
   }
 }
