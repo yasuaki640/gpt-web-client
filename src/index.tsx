@@ -1,3 +1,4 @@
+import * as http from "http";
 import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
@@ -10,6 +11,7 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { v4 as uuidv4 } from "uuid";
 import { openaiMiddleware } from "./openai";
+import { RoomRepositories } from "./repositories/RoomRepositories";
 import { Messages, Rooms } from "./schema";
 
 export type Bindings = {
@@ -111,12 +113,9 @@ const toHtml = async (md: string) => {
 app.get("/chats/:roomId", async (c) => {
 	const { roomId } = c.req.param();
 
-	const db = drizzle(c.env.DB);
-	const room = await db
-		.select()
-		.from(Rooms)
-		.where(eq(Rooms.roomId, roomId))
-		.get();
+	const repo = new RoomRepositories(c);
+	const room = await repo.getRoom(roomId);
+
 	if (!room) {
 		return c.html(
 			<html lang={"ja"}>
@@ -125,9 +124,11 @@ app.get("/chats/:roomId", async (c) => {
 					<a href={"/chats"}>Back</a>
 				</body>
 			</html>,
+			404,
 		);
 	}
 
+	const db = drizzle(c.env.DB);
 	const messages = await db
 		.select()
 		.from(Messages)
