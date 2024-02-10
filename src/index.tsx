@@ -1,4 +1,3 @@
-import * as http from "http";
 import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
@@ -11,9 +10,9 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { v4 as uuidv4 } from "uuid";
 import { openaiMiddleware } from "./openai";
-import { MessageRepositories } from "./repositories/MessageRepositories";
-import { RoomRepositories } from "./repositories/RoomRepositories";
 import { Messages, Rooms } from "./schema";
+import {getRoom} from "./repositories/room-repository";
+import {getMessagesByRoomId} from "./repositories/message-repository";
 
 export type Bindings = {
 	USERNAME: string;
@@ -114,8 +113,8 @@ const toHtml = async (md: string) => {
 app.get("/chats/:roomId", async (c) => {
 	const { roomId } = c.req.param();
 
-	const repo = new RoomRepositories(c);
-	const room = await repo.getRoom(roomId);
+	const db = drizzle(c.env.DB);
+	const room = await getRoom(db, roomId);
 	if (!room) {
 		return c.html(
 			<html lang={"ja"}>
@@ -128,8 +127,7 @@ app.get("/chats/:roomId", async (c) => {
 		);
 	}
 
-	const messageRepo = new MessageRepositories(c);
-	const messages = await messageRepo.getAllByRoomId(roomId);
+	const messages = await getMessagesByRoomId(db, roomId);
 
 	const messagesHtml = await Promise.all(
 		messages.map(async (message) => {
