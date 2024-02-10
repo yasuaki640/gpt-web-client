@@ -10,9 +10,12 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { v4 as uuidv4 } from "uuid";
 import { openaiMiddleware } from "./openai";
+import { getMessagesByRoomId } from "./repositories/message-repository";
+import { getRoom } from "./repositories/room-repository";
 import { Messages, Rooms } from "./schema";
-import {getRoom} from "./repositories/room-repository";
-import {getMessagesByRoomId} from "./repositories/message-repository";
+import { NotFound } from "./views/NotFound";
+import { Room } from "./views/Room";
+import { RoomList } from "./views/RoomList";
 
 export type Bindings = {
 	USERNAME: string;
@@ -59,36 +62,7 @@ app.get("/chats", async (c) => {
 		.orderBy(desc(Rooms.roomUpdated))
 		.all();
 
-	return c.html(
-		<html lang={"ja"}>
-			<body>
-				<h1>Chat Rooms.</h1>
-				<a href={"/chats/new"}>New</a>
-				<table>
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>Created</th>
-							<th>Updated</th>
-							<th>Link</th>
-						</tr>
-					</thead>
-					{rooms.map((room) => (
-						<tbody>
-							<tr>
-								<td>{room.roomId}</td>
-								<td>{room.roomCreated}</td>
-								<td>{room.roomUpdated}</td>
-								<td>
-									<a href={`/chats/${room.roomId}`}>Detail</a>
-								</td>
-							</tr>
-						</tbody>
-					))}
-				</table>
-			</body>
-		</html>,
-	);
+	return c.html(<RoomList props={{ rooms }} />);
 });
 
 app.get("/chats/new", async (c) => {
@@ -99,6 +73,7 @@ app.get("/chats/new", async (c) => {
 	return c.redirect(`/chats/${roomId}`);
 });
 
+// @todo 後でテスト
 const toHtml = async (md: string) => {
 	const file = await unified()
 		.use(remarkParse)
@@ -116,15 +91,7 @@ app.get("/chats/:roomId", async (c) => {
 	const db = drizzle(c.env.DB);
 	const room = await getRoom(db, roomId);
 	if (!room) {
-		return c.html(
-			<html lang={"ja"}>
-				<body>
-					<h1>Room Not Found.</h1>
-					<a href={"/chats"}>Back</a>
-				</body>
-			</html>,
-			404,
-		);
+		return c.html(<NotFound props={{ message: "Room Not Found." }} />, 404);
 	}
 
 	const messages = await getMessagesByRoomId(db, roomId);
@@ -139,44 +106,7 @@ app.get("/chats/:roomId", async (c) => {
 		}),
 	);
 
-	return c.html(
-		<html lang={"ja"}>
-			<body>
-				<h1>{room.roomId}</h1>
-				<a href={"/chats"}>Back</a>
-				<table>
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>Created</th>
-							<th>Updated</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>{room.roomId}</td>
-							<td>{room.roomCreated}</td>
-							<td>{room.roomUpdated}</td>
-						</tr>
-					</tbody>
-				</table>
-				<hr />
-				{messagesHtml.length === 0 && <p>No messages.</p>}
-				{messagesHtml.map((message) => (
-					<div>
-						<p>{message.messageCreated}</p>
-						<p>{message.sender}</p>
-						<div dangerouslySetInnerHTML={{ __html: message.message }} />
-						<hr />
-					</div>
-				))}
-				<form method={"post"} action={`/chats/${room.roomId}`}>
-					<input type={"text"} name={"message"} />
-					<button type={"submit"}>Send</button>
-				</form>
-			</body>
-		</html>,
-	);
+	return c.html(<Room props={{ room, message: messagesHtml }} />);
 });
 
 app.post("/chats/:roomId", async (c) => {
@@ -194,14 +124,7 @@ app.post("/chats/:roomId", async (c) => {
 		.where(eq(Rooms.roomId, roomId))
 		.get();
 	if (!room) {
-		return c.html(
-			<html lang={"ja"}>
-				<body>
-					<h1>Room Not Found.</h1>
-					<a href={"/chats"}>Back</a>
-				</body>
-			</html>,
-		);
+		return c.html(<NotFound props={{ message: "Room Not Found." }} />, 404);
 	}
 
 	const messages = await db
