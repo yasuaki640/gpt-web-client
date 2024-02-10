@@ -11,6 +11,7 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { v4 as uuidv4 } from "uuid";
 import { openaiMiddleware } from "./openai";
+import { MessageRepositories } from "./repositories/MessageRepositories";
 import { RoomRepositories } from "./repositories/RoomRepositories";
 import { Messages, Rooms } from "./schema";
 
@@ -115,7 +116,6 @@ app.get("/chats/:roomId", async (c) => {
 
 	const repo = new RoomRepositories(c);
 	const room = await repo.getRoom(roomId);
-
 	if (!room) {
 		return c.html(
 			<html lang={"ja"}>
@@ -128,12 +128,8 @@ app.get("/chats/:roomId", async (c) => {
 		);
 	}
 
-	const db = drizzle(c.env.DB);
-	const messages = await db
-		.select()
-		.from(Messages)
-		.where(eq(Messages.roomId, roomId))
-		.all();
+	const messageRepo = new MessageRepositories(c);
+	const messages = await messageRepo.getAllByRoomId(roomId);
 
 	const messagesHtml = await Promise.all(
 		messages.map(async (message) => {

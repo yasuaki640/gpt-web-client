@@ -1,10 +1,28 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {beforeEach, describe, expect, it, vi} from "vitest";
 import app from "../index";
 
 const MOCK_ENV = {
 	USERNAME: "test",
 	PASSWORD: "test",
 };
+
+vi.mock("openai", () => {
+	return {
+		default: class {
+			constructor() {}
+		},
+	};
+});
+
+const { RoomRepositories } = vi.hoisted(() => {
+	const RoomRepositories = vi.fn();
+	RoomRepositories.prototype.getRoom = vi.fn();
+	RoomRepositories.prototype.getRoom.mockResolvedValue({
+		roomId: "1",
+		roomName: "test",
+	});
+	return { RoomRepositories };
+});
 
 beforeEach(() => {
 	vi.clearAllMocks();
@@ -26,9 +44,7 @@ describe("GET /chats/:id", () => {
 		});
 
 		vi.mock("../repositories/RoomRepositories", () => {
-			const RoomRepositories = vi.fn();
-			RoomRepositories.prototype.getRoom = vi.fn();
-			RoomRepositories.prototype.getRoom.mockResolvedValue(null);
+			RoomRepositories.prototype.getRoom.mockResolvedValue(undefined);
 			return { RoomRepositories };
 		});
 
@@ -43,6 +59,8 @@ describe("GET /chats/:id", () => {
 		);
 
 		expect(res.status).toBe(404);
-		expect(await res.text()).toBe('<html lang="ja"><body><h1>Room Not Found.</h1><a href="/chats">Back</a></body></html>');
+		expect(await res.text()).toBe(
+			'<html lang="ja"><body><h1>Room Not Found.</h1><a href="/chats">Back</a></body></html>',
+		);
 	});
 });
