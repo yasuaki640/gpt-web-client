@@ -24,7 +24,7 @@ describe("GET /chats/:id", () => {
 				},
 			};
 		});
-		// @todo pathなんとかする configでrootを指定するとか？
+
 		vi.mock("../repositories/RoomRepositories", () => {
 			const RoomRepositories = vi.fn();
 			RoomRepositories.prototype.getRoom = vi.fn();
@@ -41,6 +41,8 @@ describe("GET /chats/:id", () => {
 			},
 			MOCK_ENV,
 		);
+
 		expect(res.status).toBe(404);
+		expect(await res.text()).toBe('<html lang="ja"><body><h1>Room Not Found.</h1><a href="/chats">Back</a></body></html>');
 	});
 });
