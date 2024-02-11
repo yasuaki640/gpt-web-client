@@ -1,4 +1,3 @@
-import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
@@ -10,12 +9,16 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { v4 as uuidv4 } from "uuid";
 import { openaiMiddleware } from "./openai";
-import { getMessagesByRoomId } from "./repositories/message-repository";
-import { getRoom } from "./repositories/room-repository";
-import { Messages, Rooms } from "./schema";
+import {
+	getMessagesByRoomId,
+	insertMessage,
+} from "./repositories/message-repository";
+import { getAllRooms, getRoom } from "./repositories/room-repository";
+import { Rooms } from "./schema";
 import { NotFound } from "./views/NotFound";
 import { Room } from "./views/Room";
 import { RoomList } from "./views/RoomList";
+import { Top } from "./views/Top";
 
 export type Bindings = {
 	USERNAME: string;
@@ -43,24 +46,11 @@ app.use("*", async (c, next) => {
 
 app.use("*", openaiMiddleware);
 
-app.get("/", (c) =>
-	c.html(
-		<html lang={"ja"}>
-			<body>
-				<h1>Hello World</h1>
-				<a href={"/chats"}>Chats</a>
-			</body>
-		</html>,
-	),
-);
+app.get("/", (c) => c.html(<Top />));
 
 app.get("/chats", async (c) => {
 	const db = drizzle(c.env.DB);
-	const rooms = await db
-		.select()
-		.from(Rooms)
-		.orderBy(desc(Rooms.roomUpdated))
-		.all();
+	const rooms = await getAllRooms(db);
 
 	return c.html(<RoomList props={{ rooms }} />);
 });
@@ -118,20 +108,12 @@ app.post("/chats/:roomId", async (c) => {
 	}
 
 	const db = drizzle(c.env.DB);
-	const room = await db
-		.select()
-		.from(Rooms)
-		.where(eq(Rooms.roomId, roomId))
-		.get();
+	const room = await getRoom(db, roomId);
 	if (!room) {
 		return c.html(<NotFound props={{ message: "Room Not Found." }} />, 404);
 	}
 
-	const messages = await db
-		.select()
-		.from(Messages)
-		.where(eq(Messages.roomId, roomId))
-		.all();
+	const messages = await getMessagesByRoomId(db, roomId);
 
 	const rest = messages.map((m) => ({ role: m.sender, content: m.message }));
 
@@ -141,25 +123,22 @@ app.post("/chats/:roomId", async (c) => {
 		model: "gpt-4-turbo-preview",
 	});
 
-	const assistantMessages = res.choices.map((c) => ({
+	const resMessage = res.choices.map((c) => ({
 		messageId: uuidv4(),
 		roomId,
 		sender: "assistant",
 		message: c.message.content || "",
 	}));
 
-	await db
-		.insert(Messages)
-		.values([
-			{
-				messageId: uuidv4(),
-				roomId,
-				sender: "user",
-				message: newMessage,
-			},
-			...assistantMessages,
-		])
-		.execute();
+	await insertMessage(db, [
+		{
+			messageId: uuidv4(),
+			roomId,
+			sender: "user",
+			message: newMessage,
+		},
+		...resMessage,
+	]);
 
 	return c.redirect(`/chats/${roomId}`);
 });
