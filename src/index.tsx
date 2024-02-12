@@ -8,7 +8,7 @@ import {
 	insertMessage,
 } from "./repositories/message-repository";
 import { getAllRooms, getRoom } from "./repositories/room-repository";
-import { Rooms } from "./schema";
+import { Messages, Rooms } from "./schema";
 import type { AppEnv, Bindings, Variables } from "./types";
 import { parseMarkdown } from "./utils/markdown";
 import { NotFound } from "./views/NotFound";
@@ -48,9 +48,9 @@ app.get("/chats/:roomId", async (c) => {
 		return c.html(<NotFound props={{ message: "Room Not Found." }} />, 404);
 	}
 
-	const messages = await getMessagesByRoomId(db, roomId);
-	const messagesHtml = await Promise.all(
-		messages.map(async (message) => {
+	const fetched = await getMessagesByRoomId(db, roomId);
+	const parsedMessages = await Promise.all(
+		fetched.map(async (message) => {
 			const html = await parseMarkdown(message.message);
 			return {
 				...message,
@@ -59,7 +59,7 @@ app.get("/chats/:roomId", async (c) => {
 		}),
 	);
 
-	return c.html(<Room props={{ room, message: messagesHtml }} />);
+	return c.html(<Room props={{ room, message: parsedMessages }} />);
 });
 
 app.post("/chats/:roomId", async (c) => {
@@ -76,32 +76,30 @@ app.post("/chats/:roomId", async (c) => {
 		return c.html(<NotFound props={{ message: "Room Not Found." }} />, 404);
 	}
 
-	const messages = await getMessagesByRoomId(db, roomId);
-
-	const rest = messages.map((m) => ({ role: m.sender, content: m.message }));
-
+	const fetched = await getMessagesByRoomId(db, roomId);
+	const messageHistory = fetched.map((m) => ({
+		role: m.sender,
+		content: m.message,
+	}));
 	// @todo 後で型を治す、schemaの名称をopenaiクライアントに寄せたい
-	const res = await c.var.openai.chat.completions.create({
-		messages: [...rest, { role: "user", content: newMessage }],
+	const openaiRes = await c.var.openai.chat.completions.create({
+		messages: [...messageHistory, { role: "user", content: newMessage }],
 		model: "gpt-4-turbo-preview",
 	});
 
-	const resMessage = res.choices.map((c) => ({
+	const resMessage = openaiRes.choices.map((c) => ({
 		messageId: uuidv4(),
 		roomId,
 		sender: "assistant",
 		message: c.message.content || "",
 	}));
-
-	await insertMessage(db, [
-		{
-			messageId: uuidv4(),
-			roomId,
-			sender: "user",
-			message: newMessage,
-		},
-		...resMessage,
-	]);
+	const reqMessage: typeof Messages.$inferInsert = {
+		messageId: uuidv4(),
+		roomId,
+		sender: "user",
+		message: newMessage,
+	};
+	await insertMessage(db, [reqMessage, ...resMessage]);
 
 	return c.redirect(`/chats/${roomId}`);
 });
