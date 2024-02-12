@@ -1,13 +1,7 @@
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
-import { basicAuth } from "hono/basic-auth";
-import OpenAI from "openai";
-import rehypeSanitize from "rehype-sanitize";
-import rehypeStringify from "rehype-stringify";
-import remarkParse from "remark-parse";
-import remarkRehype from "remark-rehype";
-import { unified } from "unified";
 import { v4 as uuidv4 } from "uuid";
+import { BasicAuthMiddleware } from "./middleware/basic-auth";
 import { OpenaiMiddleware } from "./middleware/openai";
 import {
 	getMessagesByRoomId,
@@ -15,26 +9,14 @@ import {
 } from "./repositories/message-repository";
 import { getAllRooms, getRoom } from "./repositories/room-repository";
 import { Rooms } from "./schema";
+import type { AppEnv, Bindings, Variables } from "./types";
+import { parseMarkdown } from "./utils/markdown";
 import { NotFound } from "./views/NotFound";
 import { Room } from "./views/Room";
 import { RoomList } from "./views/RoomList";
 import { Top } from "./views/Top";
-import {BasicAuthMiddleware} from "./middleware/basic-auth";
 
-export type Bindings = {
-	USERNAME: string;
-	PASSWORD: string;
-	OPENAI_API_KEY: string;
-	DB: D1Database;
-};
-export type Variables = {
-	openai: OpenAI;
-};
-
-const app = new Hono<{
-	Bindings: Bindings;
-	Variables: Variables;
-}>();
+const app = new Hono<AppEnv>();
 
 // Middleware
 app.use(BasicAuthMiddleware);
@@ -57,18 +39,6 @@ app.get("/chats/new", async (c) => {
 	return c.redirect(`/chats/${roomId}`);
 });
 
-// @todo 後でテスト
-const toHtml = async (md: string) => {
-	const file = await unified()
-		.use(remarkParse)
-		.use(remarkRehype)
-		.use(rehypeSanitize)
-		.use(rehypeStringify)
-		.process(md);
-
-	return String(file);
-};
-
 app.get("/chats/:roomId", async (c) => {
 	const { roomId } = c.req.param();
 
@@ -79,10 +49,9 @@ app.get("/chats/:roomId", async (c) => {
 	}
 
 	const messages = await getMessagesByRoomId(db, roomId);
-
 	const messagesHtml = await Promise.all(
 		messages.map(async (message) => {
-			const html = await toHtml(message.message);
+			const html = await parseMarkdown(message.message);
 			return {
 				...message,
 				message: html,
