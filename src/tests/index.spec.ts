@@ -1,23 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../index";
-import { Messages, Rooms } from "../schema";
+import { getMessagesByRoomId } from "../repositories/message-repository";
+import { getRoom } from "../repositories/room-repository";
 
-const MOCK_ENV = {
+const MOCK_BINDINGS = {
 	USERNAME: "test",
 	PASSWORD: "test",
 };
 
 vi.mock("openai", () => {
 	return {
-		default: class {
-			constructor() {}
-		},
+		default: class {},
 	};
 });
 
-const { getRoom } = vi.hoisted(() => ({
-	getRoom: vi
-		.fn<any, typeof Rooms.$inferSelect | undefined>()
+const { mockGetRoom } = vi.hoisted(() => ({
+	mockGetRoom: vi
+		.fn<Parameters<typeof getRoom>, ReturnType<typeof getRoom>>()
 		.mockResolvedValue({
 			roomId: "test",
 			roomTitle: "test",
@@ -26,12 +25,15 @@ const { getRoom } = vi.hoisted(() => ({
 		}),
 }));
 vi.mock("../repositories/room-repository", () => ({
-	getRoom,
+	getRoom: mockGetRoom,
 }));
 
-const { getMessagesByRoomId } = vi.hoisted(() => ({
-	getMessagesByRoomId: vi
-		.fn<any, (typeof Messages.$inferSelect)[]>()
+const { mockGetMessagesByRoomId } = vi.hoisted(() => ({
+	mockGetMessagesByRoomId: vi
+		.fn<
+			Parameters<typeof getMessagesByRoomId>,
+			ReturnType<typeof getMessagesByRoomId>
+		>()
 		.mockResolvedValue([
 			{
 				messageId: "test",
@@ -43,7 +45,7 @@ const { getMessagesByRoomId } = vi.hoisted(() => ({
 		]),
 }));
 vi.mock("../repositories/message-repository", () => ({
-	getMessagesByRoomId,
+	getMessagesByRoomId: mockGetMessagesByRoomId,
 }));
 
 beforeEach(() => {
@@ -52,12 +54,12 @@ beforeEach(() => {
 
 describe("GET /chats/:id", () => {
 	it("should return when basic auth failed", async () => {
-		const res = await app.request("/chats/1", {}, MOCK_ENV);
+		const res = await app.request("/chats/1", {}, MOCK_BINDINGS);
 		expect(res.status).toBe(401);
 	});
 
 	it("should return when specified room does not exist", async () => {
-		getRoom.mockResolvedValue(undefined);
+		mockGetRoom.mockResolvedValue(undefined);
 
 		const res = await app.request(
 			"/chats/do-not-exist",
@@ -66,7 +68,7 @@ describe("GET /chats/:id", () => {
 					Authorization: "Basic dGVzdDp0ZXN0",
 				},
 			},
-			MOCK_ENV,
+			MOCK_BINDINGS,
 		);
 
 		expect(res.status).toBe(404);
@@ -76,7 +78,7 @@ describe("GET /chats/:id", () => {
 	});
 
 	it("should return when specified room exists", async () => {
-		getRoom.mockResolvedValue({
+		mockGetRoom.mockResolvedValue({
 			roomId: "test",
 			roomTitle: "test",
 			roomCreated: "2021-01-01T00:00:00Z",
@@ -90,7 +92,7 @@ describe("GET /chats/:id", () => {
 					Authorization: "Basic dGVzdDp0ZXN0",
 				},
 			},
-			MOCK_ENV,
+			MOCK_BINDINGS,
 		);
 
 		expect(res.status).toBe(200);
