@@ -1,8 +1,8 @@
 import { MiddlewareHandler } from "hono";
 import OpenAI from "openai";
-import { type Bindings, type Variables } from "./index";
+import { type Bindings, type Variables } from "../index";
 
-export const openaiMiddleware: MiddlewareHandler<{
+export const OpenaiMiddleware: MiddlewareHandler<{
 	Bindings: Bindings;
 	Variables: Variables;
 }> = async (c, next) => {

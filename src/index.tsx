@@ -8,7 +8,7 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { v4 as uuidv4 } from "uuid";
-import { openaiMiddleware } from "./openai";
+import { OpenaiMiddleware } from "./middleware/openai";
 import {
 	getMessagesByRoomId,
 	insertMessage,
@@ -19,6 +19,7 @@ import { NotFound } from "./views/NotFound";
 import { Room } from "./views/Room";
 import { RoomList } from "./views/RoomList";
 import { Top } from "./views/Top";
+import {BasicAuthMiddleware} from "./middleware/basic-auth";
 
 export type Bindings = {
 	USERNAME: string;
@@ -26,7 +27,6 @@ export type Bindings = {
 	OPENAI_API_KEY: string;
 	DB: D1Database;
 };
-
 export type Variables = {
 	openai: OpenAI;
 };
@@ -36,15 +36,9 @@ const app = new Hono<{
 	Variables: Variables;
 }>();
 
-app.use("*", async (c, next) => {
-	const auth = basicAuth({
-		username: c.env.USERNAME,
-		password: c.env.PASSWORD,
-	});
-	return auth(c, next);
-});
-
-app.use("*", openaiMiddleware);
+// Middleware
+app.use(BasicAuthMiddleware);
+app.use(OpenaiMiddleware);
 
 app.get("/", (c) => c.html(<Top />));
 
