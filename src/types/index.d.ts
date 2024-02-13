@@ -1,15 +1,15 @@
 import OpenAI from "openai";
 
 export type Bindings = {
-	USERNAME: string;
-	PASSWORD: string;
-	OPENAI_API_KEY: string;
-	DB: D1Database;
+  USERNAME: string;
+  PASSWORD: string;
+  OPENAI_API_KEY: string;
+  DB: D1Database;
 };
 export type Variables = {
-	openai: OpenAI;
+  openai: OpenAI;
 };
 export type AppEnv = {
-	Bindings: Bindings;
-	Variables: Variables;
+  Bindings: Bindings;
+  Variables: Variables;
 };

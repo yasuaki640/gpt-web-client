@@ -5,12 +5,12 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 
 export const parseMarkdown = async (md: string) => {
-	const file = await unified()
-		.use(remarkParse)
-		.use(remarkRehype)
-		.use(rehypeSanitize)
-		.use(rehypeStringify)
-		.process(md);
+  const file = await unified()
+    .use(remarkParse)
+    .use(remarkRehype)
+    .use(rehypeSanitize)
+    .use(rehypeStringify)
+    .process(md);
 
-	return String(file);
+  return String(file);
 };

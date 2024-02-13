@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { parseMarkdown } from "./markdown";
 
 describe("parseMarkdown", () => {
-	it("should convert parseMarkdown to html", async () => {
-		const actual = await parseMarkdown(markdown);
-		expect(actual).toBe(expected);
-	});
+  it("should convert parseMarkdown to html", async () => {
+    const actual = await parseMarkdown(markdown);
+    expect(actual).toBe(expected);
+  });
 });
 
 const markdown = `# Sample Markdown

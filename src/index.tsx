@@ -4,8 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 import { BasicAuthMiddleware } from "./middleware/basic-auth";
 import { OpenaiMiddleware } from "./middleware/openai";
 import {
-	getMessagesByRoomId,
-	insertMessage,
+  getMessagesByRoomId,
+  insertMessage,
 } from "./repositories/message-repository";
 import { getAllRooms, getRoom } from "./repositories/room-repository";
 import { Messages, Rooms } from "./schema";
@@ -25,83 +25,82 @@ app.use(OpenaiMiddleware);
 app.get("/", (c) => c.html(<Top />));
 
 app.get("/chats", async (c) => {
-	const db = drizzle(c.env.DB);
-	const rooms = await getAllRooms(db);
+  const db = drizzle(c.env.DB);
+  const rooms = await getAllRooms(db);
 
-	return c.html(<RoomList props={{ rooms }} />);
+  return c.html(<RoomList props={{ rooms }} />);
 });
 
 app.get("/chats/new", async (c) => {
-	const roomId = uuidv4();
-	const db = drizzle(c.env.DB);
-	await db.insert(Rooms).values({ roomId }).execute();
+  const roomId = uuidv4();
+  const db = drizzle(c.env.DB);
+  await db.insert(Rooms).values({ roomId }).execute();
 
-	return c.redirect(`/chats/${roomId}`);
+  return c.redirect(`/chats/${roomId}`);
 });
 
 app.get("/chats/:roomId", async (c) => {
-	const { roomId } = c.req.param();
+  const { roomId } = c.req.param();
 
-	const db = drizzle(c.env.DB);
-	const room = await getRoom(db, roomId);
-	if (!room) {
-		return c.html(<NotFound props={{ message: "Room Not Found." }} />, 404);
-	}
+  const db = drizzle(c.env.DB);
+  const room = await getRoom(db, roomId);
+  if (!room) {
+    return c.html(<NotFound props={{ message: "Room Not Found." }} />, 404);
+  }
 
-	const fetched = await getMessagesByRoomId(db, roomId);
-	const parsedMessages = await Promise.all(
-		fetched.map(async (message) => {
-			const html = await parseMarkdown(message.message);
-			return {
-				...message,
-				message: html,
-			};
-		}),
-	);
+  const fetched = await getMessagesByRoomId(db, roomId);
+  const parsedMessages = await Promise.all(
+    fetched.map(async (message) => {
+      const html = await parseMarkdown(message.message);
+      return {
+        ...message,
+        message: html,
+      };
+    }),
+  );
 
-	return c.html(<Room props={{ room, message: parsedMessages }} />);
+  return c.html(<Room props={{ room, message: parsedMessages }} />);
 });
 
 app.post("/chats/:roomId", async (c) => {
-	const { roomId } = c.req.param();
-	const formData = await c.req.formData();
-	const newMessage = formData.get("message");
-	if (!(typeof newMessage === "string")) {
-		return c.redirect(`/chats/${roomId}`);
-	}
+  const { roomId } = c.req.param();
+  const formData = await c.req.formData();
+  const newMessage = formData.get("message");
+  if (!(typeof newMessage === "string")) {
+    return c.redirect(`/chats/${roomId}`);
+  }
 
-	const db = drizzle(c.env.DB);
-	const room = await getRoom(db, roomId);
-	if (!room) {
-		return c.html(<NotFound props={{ message: "Room Not Found." }} />, 404);
-	}
+  const db = drizzle(c.env.DB);
+  const room = await getRoom(db, roomId);
+  if (!room) {
+    return c.html(<NotFound props={{ message: "Room Not Found." }} />, 404);
+  }
 
-	const fetched = await getMessagesByRoomId(db, roomId);
-	const messageHistory = fetched.map((m) => ({
-		role: m.sender,
-		content: m.message,
-	}));
-	// @todo 後で型を治す、schemaの名称をopenaiクライアントに寄せたい
-	const openaiRes = await c.var.openai.chat.completions.create({
-		messages: [...messageHistory, { role: "user", content: newMessage }],
-		model: "gpt-4-turbo-preview",
-	});
+  const fetched = await getMessagesByRoomId(db, roomId);
+  const messageHistory = fetched.map((m) => ({
+    role: m.sender,
+    content: m.message,
+  }));
+  const openaiRes = await c.var.openai.chat.completions.create({
+    messages: [...messageHistory, { role: "user", content: newMessage }],
+    model: "gpt-4-turbo-preview",
+  });
 
-	const resMessage = openaiRes.choices.map((c) => ({
-		messageId: uuidv4(),
-		roomId,
-		sender: "assistant",
-		message: c.message.content || "",
-	}));
-	const reqMessage: typeof Messages.$inferInsert = {
-		messageId: uuidv4(),
-		roomId,
-		sender: "user",
-		message: newMessage,
-	};
-	await insertMessage(db, [reqMessage, ...resMessage]);
+  const resMessage = openaiRes.choices.map((c) => ({
+    messageId: uuidv4(),
+    roomId,
+    sender: "assistant",
+    message: c.message.content || "",
+  }));
+  const reqMessage: typeof Messages.$inferInsert = {
+    messageId: uuidv4(),
+    roomId,
+    sender: "user",
+    message: newMessage,
+  };
+  await insertMessage(db, [reqMessage, ...resMessage]);
 
-	return c.redirect(`/chats/${roomId}`);
+  return c.redirect(`/chats/${roomId}`);
 });
 
 export default app;
