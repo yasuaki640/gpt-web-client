@@ -33,6 +33,7 @@ export const Room: FC<{ props: Props }> = ({ props }) => (
         <div>
           <p>{message.messageCreated}</p>
           <p>{message.sender}</p>
+          {/* biome-ignore lint: lint/security/noDangerouslySetInnerHtml */}
           <div dangerouslySetInnerHTML={{ __html: message.message }} />
           <hr />
         </div>

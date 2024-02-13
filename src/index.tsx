@@ -1,6 +1,5 @@
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
-import OpenAI from "openai";
 import { v4 as uuidv4 } from "uuid";
 import { BasicAuthMiddleware } from "./middleware/basic-auth";
 import { OpenaiMiddleware } from "./middleware/openai";
@@ -10,15 +9,12 @@ import {
 } from "./repositories/message-repository";
 import { getAllRooms, getRoom } from "./repositories/room-repository";
 import { Messages, Rooms } from "./schema";
-import type { AppEnv, Bindings, Variables } from "./types";
+import type { AppEnv } from "./types";
 import { parseMarkdown } from "./utils/markdown";
 import { NotFound } from "./views/NotFound";
 import { Room } from "./views/Room";
 import { RoomList } from "./views/RoomList";
 import { Top } from "./views/Top";
-import ChatCompletionMessageParam = OpenAI.ChatCompletionMessageParam;
-import { Chat, ChatCompletionAssistantMessageParam } from "openai/resources";
-import ChatCompletionUserMessageParam = Chat.ChatCompletionUserMessageParam;
 
 const app = new Hono<AppEnv>();
 
