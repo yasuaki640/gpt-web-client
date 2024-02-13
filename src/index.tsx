@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
+import OpenAI from "openai";
 import { v4 as uuidv4 } from "uuid";
 import { BasicAuthMiddleware } from "./middleware/basic-auth";
 import { OpenaiMiddleware } from "./middleware/openai";
@@ -15,6 +16,9 @@ import { NotFound } from "./views/NotFound";
 import { Room } from "./views/Room";
 import { RoomList } from "./views/RoomList";
 import { Top } from "./views/Top";
+import ChatCompletionMessageParam = OpenAI.ChatCompletionMessageParam;
+import { Chat, ChatCompletionAssistantMessageParam } from "openai/resources";
+import ChatCompletionUserMessageParam = Chat.ChatCompletionUserMessageParam;
 
 const app = new Hono<AppEnv>();
 
@@ -86,12 +90,14 @@ app.post("/chats/:roomId", async (c) => {
     model: "gpt-4-turbo-preview",
   });
 
-  const resMessage = openaiRes.choices.map((c) => ({
-    messageId: uuidv4(),
-    roomId,
-    sender: "assistant",
-    message: c.message.content || "",
-  }));
+  const resMessage = openaiRes.choices.map<typeof Messages.$inferInsert>(
+    (c) => ({
+      messageId: uuidv4(),
+      roomId,
+      sender: "assistant",
+      message: c.message.content || "",
+    }),
+  );
   const reqMessage: typeof Messages.$inferInsert = {
     messageId: uuidv4(),
     roomId,

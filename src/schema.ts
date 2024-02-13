@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { ChatCompletionRole } from "openai/src/resources/chat/completions";
 
 export const Rooms = sqliteTable("Rooms", {
   roomId: text("roomId").primaryKey(),
@@ -15,7 +16,7 @@ export const Rooms = sqliteTable("Rooms", {
 export const Messages = sqliteTable("messages", {
   messageId: text("messageId").primaryKey(),
   roomId: text("roomId").notNull(), // TODO 後で外部キー制約つける
-  sender: text("sender").notNull(),
+  sender: text("sender").$type<"user" | "assistant">().notNull(),
   message: text("message").notNull(),
   messageCreated: text("messageCreated")
     .notNull()
