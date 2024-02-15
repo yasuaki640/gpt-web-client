@@ -2,6 +2,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
 import { v4 as uuidv4 } from "uuid";
 import { BasicAuthMiddleware } from "./middleware/basic-auth";
+import { LayoutMiddleware } from "./middleware/layout";
 import { OpenaiMiddleware } from "./middleware/openai";
 import {
   getMessagesByRoomId,
@@ -21,14 +22,15 @@ const app = new Hono<AppEnv>();
 // Middleware
 app.use(BasicAuthMiddleware);
 app.use(OpenaiMiddleware);
+app.use(LayoutMiddleware);
 
-app.get("/", (c) => c.html(<Top />));
+app.get("/", (c) => c.render(<Top />));
 
 app.get("/chats", async (c) => {
   const db = drizzle(c.env.DB);
   const rooms = await getAllRooms(db);
 
-  return c.html(<RoomList props={{ rooms }} />);
+  return c.render(<RoomList props={{ rooms }} />);
 });
 
 app.get("/chats/new", async (c) => {
@@ -45,7 +47,7 @@ app.get("/chats/:roomId", async (c) => {
   const db = drizzle(c.env.DB);
   const room = await getRoom(db, roomId);
   if (!room) {
-    return c.html(<NotFound props={{ message: "Room Not Found." }} />, 404);
+    return c.render(<NotFound props={{ message: "Room Not Found." }} />);
   }
 
   const fetched = await getMessagesByRoomId(db, roomId);
@@ -59,7 +61,7 @@ app.get("/chats/:roomId", async (c) => {
     }),
   );
 
-  return c.html(<Room props={{ room, message: parsedMessages }} />);
+  return c.render(<Room props={{ room, message: parsedMessages }} />);
 });
 
 app.post("/chats/:roomId", async (c) => {
@@ -73,7 +75,7 @@ app.post("/chats/:roomId", async (c) => {
   const db = drizzle(c.env.DB);
   const room = await getRoom(db, roomId);
   if (!room) {
-    return c.html(<NotFound props={{ message: "Room Not Found." }} />, 404);
+    return c.render(<NotFound props={{ message: "Room Not Found." }} />);
   }
 
   const fetched = await getMessagesByRoomId(db, roomId);

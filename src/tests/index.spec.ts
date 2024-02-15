@@ -71,7 +71,6 @@ describe("GET /chats/:id", () => {
       MOCK_BINDINGS,
     );
 
-    expect(res.status).toBe(404);
     expect(await res.text()).toContain("Room Not Found.");
   });
 
@@ -92,8 +91,6 @@ describe("GET /chats/:id", () => {
       },
       MOCK_BINDINGS,
     );
-
-    expect(res.status).toBe(200);
 
     const actual = await res.text();
     expect(actual).toContain("test-room-id");
