@@ -4,7 +4,11 @@ import {
   getMessagesByRoomId,
   insertMessage,
 } from "../repositories/message-repository";
-import { getAllRooms, getRoom } from "../repositories/room-repository";
+import {
+  getAllRooms,
+  getRoom,
+  insertRoom,
+} from "../repositories/room-repository";
 
 const MOCK_BINDINGS = {
   USERNAME: "test",
@@ -17,7 +21,11 @@ vi.mock("openai", () => {
   };
 });
 
-const { mockGetRoom, mockGetAllRooms } = vi.hoisted(() => ({
+const { mockInsertRoom, mockGetRoom, mockGetAllRooms } = vi.hoisted(() => ({
+  mockInsertRoom: vi.fn<
+    Parameters<typeof insertRoom>,
+    ReturnType<typeof insertRoom>
+  >(),
   mockGetRoom: vi
     .fn<Parameters<typeof getRoom>, ReturnType<typeof getRoom>>()
     .mockResolvedValue({
@@ -44,6 +52,7 @@ const { mockGetRoom, mockGetAllRooms } = vi.hoisted(() => ({
     ]),
 }));
 vi.mock("../repositories/room-repository", () => ({
+  insertRoom: mockInsertRoom,
   getRoom: mockGetRoom,
   getAllRooms: mockGetAllRooms,
 }));
@@ -143,11 +152,15 @@ describe("GET /chats", () => {
       },
     ]);
 
-    const res = await app.request("/chats",       {
-      headers: {
-        Authorization: "Basic dGVzdDp0ZXN0",
+    const res = await app.request(
+      "/chats",
+      {
+        headers: {
+          Authorization: "Basic dGVzdDp0ZXN0",
+        },
       },
-    }, MOCK_BINDINGS);
+      MOCK_BINDINGS,
+    );
     expect(res.status).toBe(200);
     const actual = await res.text();
     expect(actual).toContain("test-roomId1");
@@ -160,21 +173,24 @@ describe("GET /chats", () => {
   });
 });
 
-// describe("GET /chats/new", () => {
-//   it("should create a new chat room and redirect", async () => {
-//     const res = await app.request(
-//       "/chats/new",
-//       { method: "GET", headers: {
-//         Authorization : "Basic dGVzdDp0ZXN0"
-//         }
-//       },
-//       MOCK_BINDINGS,
-//     );
-//     expect(res.status).toBe(302); // 302 Found = リダイレクト
-//     expect(res.headers.get("Location")).toMatch(/^\/chats\/[a-z0-9-]+$/); // UUIDでリダイレクトされるか確認
-//   });
-// });
-//
+describe("GET /chats/new", () => {
+  it("should create a new chat room and redirect", async () => {
+    const res = await app.request(
+      "/chats/new",
+      {
+        method: "GET",
+        headers: {
+          Authorization: "Basic dGVzdDp0ZXN0",
+        },
+      },
+      MOCK_BINDINGS,
+    );
+
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toMatch(/^\/chats\/[a-z0-9-]+$/);
+  });
+});
+
 // describe("POST /chats/:roomId", () => {
 //   it("should accept a new message and return to the chat room", async () => {
 //     const roomId = "test-room-id";

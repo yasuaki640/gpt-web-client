@@ -8,7 +8,11 @@ import {
   getMessagesByRoomId,
   insertMessage,
 } from "./repositories/message-repository";
-import { getAllRooms, getRoom } from "./repositories/room-repository";
+import {
+  getAllRooms,
+  getRoom,
+  insertRoom,
+} from "./repositories/room-repository";
 import { Messages, Rooms } from "./schema";
 import type { AppEnv } from "./types";
 import { parseMarkdown } from "./utils/markdown";
@@ -36,7 +40,7 @@ app.get("/chats", async (c) => {
 app.get("/chats/new", async (c) => {
   const roomId = uuidv4();
   const db = drizzle(c.env.DB);
-  await db.insert(Rooms).values({ roomId }).execute();
+  await insertRoom(db, roomId);
 
   return c.redirect(`/chats/${roomId}`);
 });
