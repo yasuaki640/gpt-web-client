@@ -1,3 +1,5 @@
+import { DrizzleD1Database } from "drizzle-orm/d1";
+import OpenAI from "openai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../index";
 import {
@@ -9,6 +11,7 @@ import {
   getRoom,
   insertRoom,
 } from "../repositories/room-repository";
+import { fetchCompletion } from "../utils/openai-client";
 
 const MOCK_BINDINGS = {
   USERNAME: "test",
@@ -20,6 +23,21 @@ vi.mock("openai", () => {
     default: class {},
   };
 });
+
+const { mockFetchCompletion } = vi.hoisted(() => ({
+  mockFetchCompletion: vi
+    .fn<
+      Parameters<typeof fetchCompletion>,
+      ReturnType<typeof fetchCompletion>
+    >()
+    .mockResolvedValue({
+      // @ts-expect-error
+      choices: [{ message: { content: "test" } }],
+    }),
+}));
+vi.mock("../utils/openai-client", () => ({
+  fetchCompletion: mockFetchCompletion,
+}));
 
 const { mockInsertRoom, mockGetRoom, mockGetAllRooms } = vi.hoisted(() => ({
   mockInsertRoom: vi.fn<
@@ -191,35 +209,37 @@ describe("GET /chats/new", () => {
   });
 });
 
-// describe("POST /chats/:roomId", () => {
-//   it("should accept a new message and return to the chat room", async () => {
-//     const roomId = "test-room-id";
-//     const message = "Hello, World!";
-//     mockGetRoom.mockResolvedValue({
-//       roomId,
-//       roomTitle: "Test Room",
-//       roomCreated: "2021-01-01T00:00:00Z",
-//       roomUpdated: "2021-01-02T00:00:00Z",
-//     });
-//
-//     const res = await app.request(
-//       `/chats/${roomId}`,
-//       {
-//         method: "POST",
-//         body: new URLSearchParams({ message }),
-//         headers: {
-//           "Content-Type": "application/x-www-form-urlencoded",
-//           Authorization: "Basic dGVzdDp0ZXN0",
-//         },
-//       },
-//       MOCK_BINDINGS,
-//     );
-//
-//     expect(res.status).toBe(302); // メッセージ投稿後はリダイレクトされる
-//     expect(res.headers.get("Location")).toBe(`/chats/${roomId}`);
-//     expect(mockInsertMessage).toHaveBeenCalledWith(
-//       expect.anything(),
-//       expect.arrayContaining([expect.objectContaining({ message })]),
-//     );
-//   });
-// });
+describe("POST /chats/:roomId", () => {
+  it("should accept a new message and return to the chat room", async () => {
+    const roomId = "test-room-id";
+    const message = "Hello, World!";
+    mockGetRoom.mockResolvedValue({
+      roomId,
+      roomTitle: "Test Room",
+      roomCreated: "2021-01-01T00:00:00Z",
+      roomUpdated: "2021-01-02T00:00:00Z",
+    });
+
+    const res = await app.request(
+      `/chats/${roomId}`,
+      {
+        method: "POST",
+        body: new URLSearchParams({ message: "Hello, World!" }),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: "Basic dGVzdDp0ZXN0",
+        },
+      },
+      MOCK_BINDINGS,
+    );
+
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toBe(`/chats/${roomId}`);
+    expect(mockInsertMessage).toHaveBeenCalledWith(
+      expect.any(DrizzleD1Database),
+      expect.arrayContaining([
+        expect.objectContaining({ message: "Hello, World!" }),
+      ]),
+    );
+  });
+});

@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
+import OpenAI from "openai";
 import { v4 as uuidv4 } from "uuid";
 import { BasicAuthMiddleware } from "./middleware/basic-auth";
 import { LayoutMiddleware } from "./middleware/layout";
@@ -16,6 +17,7 @@ import {
 import { Messages, Rooms } from "./schema";
 import type { AppEnv } from "./types";
 import { parseMarkdown } from "./utils/markdown";
+import { fetchCompletion } from "./utils/openai-client";
 import { NotFound } from "./views/NotFound";
 import { Room } from "./views/Room";
 import { RoomList } from "./views/RoomList";
@@ -87,12 +89,13 @@ app.post("/chats/:roomId", async (c) => {
     role: m.sender,
     content: m.message,
   }));
-  const openaiRes = await c.var.openai.chat.completions.create({
-    messages: [...messageHistory, { role: "user", content: newMessage }],
-    model: "gpt-4-turbo-preview",
-  });
 
-  const resMessage = openaiRes.choices.map<typeof Messages.$inferInsert>(
+  const completion = await fetchCompletion(
+    c.var.openai,
+    newMessage,
+    messageHistory,
+  );
+  const resMessage = completion.choices.map<typeof Messages.$inferInsert>(
     (c) => ({
       messageId: uuidv4(),
       roomId,
