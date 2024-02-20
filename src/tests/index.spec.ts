@@ -104,7 +104,64 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("GET /chats/:id", () => {
+describe("GET /chats", () => {
+  it("should return a list of chat rooms", async () => {
+    vi.mocked(getAllRooms).mockResolvedValue([
+      {
+        roomId: "test-roomId1",
+        roomTitle: "test-roomTitle1",
+        roomCreated: "2021-01-01T00:00:00Z",
+        roomUpdated: "2021-01-02T00:00:00Z",
+      },
+      {
+        roomId: "test-roomId2",
+        roomTitle: "test-roomTitle2",
+        roomCreated: "2033-02-01T00:00:00Z",
+        roomUpdated: "2033-02-02T00:00:00Z",
+      },
+    ]);
+
+    const res = await app.request(
+        "/chats",
+        {
+          headers: {
+            Authorization: "Basic dGVzdDp0ZXN0",
+          },
+        },
+        MOCK_BINDINGS,
+    );
+    expect(res.status).toBe(200);
+    const actual = await res.text();
+    expect(actual).toContain("test-roomId1");
+    expect(actual).toContain("test-roomId2");
+    // @todo fix this
+    // expect(actual).toContain("test-roomTitle1");
+    // expect(actual).toContain("test-roomTitle2");
+    expect(actual).toContain("2021-01-01T00:00:00Z");
+    expect(actual).toContain("2033-02-01T00:00:00Z");
+  });
+});
+
+describe("GET /chats/new", () => {
+  it("should create a new chat room and redirect", async () => {
+    const res = await app.request(
+        "/chats/new",
+        {
+          method: "GET",
+          headers: {
+            Authorization: "Basic dGVzdDp0ZXN0",
+          },
+        },
+        MOCK_BINDINGS,
+    );
+
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toMatch(/^\/chats\/[a-z0-9-]+$/);
+  });
+});
+
+
+describe("GET /chats/:roomId", () => {
   it("should return when basic auth failed", async () => {
     const res = await app.request("/chats/1", {}, MOCK_BINDINGS);
     expect(res.status).toBe(401);
@@ -150,62 +207,6 @@ describe("GET /chats/:id", () => {
     // expect(actual).toContain("test-room-title");
     expect(actual).toContain("2021-01-01T00:00:00Z");
     expect(actual).toContain("2023-01-01T00:00:00Z");
-  });
-});
-
-describe("GET /chats", () => {
-  it("should return a list of chat rooms", async () => {
-    vi.mocked(getAllRooms).mockResolvedValue([
-      {
-        roomId: "test-roomId1",
-        roomTitle: "test-roomTitle1",
-        roomCreated: "2021-01-01T00:00:00Z",
-        roomUpdated: "2021-01-02T00:00:00Z",
-      },
-      {
-        roomId: "test-roomId2",
-        roomTitle: "test-roomTitle2",
-        roomCreated: "2033-02-01T00:00:00Z",
-        roomUpdated: "2033-02-02T00:00:00Z",
-      },
-    ]);
-
-    const res = await app.request(
-      "/chats",
-      {
-        headers: {
-          Authorization: "Basic dGVzdDp0ZXN0",
-        },
-      },
-      MOCK_BINDINGS,
-    );
-    expect(res.status).toBe(200);
-    const actual = await res.text();
-    expect(actual).toContain("test-roomId1");
-    expect(actual).toContain("test-roomId2");
-    // @todo fix this
-    // expect(actual).toContain("test-roomTitle1");
-    // expect(actual).toContain("test-roomTitle2");
-    expect(actual).toContain("2021-01-01T00:00:00Z");
-    expect(actual).toContain("2033-02-01T00:00:00Z");
-  });
-});
-
-describe("GET /chats/new", () => {
-  it("should create a new chat room and redirect", async () => {
-    const res = await app.request(
-      "/chats/new",
-      {
-        method: "GET",
-        headers: {
-          Authorization: "Basic dGVzdDp0ZXN0",
-        },
-      },
-      MOCK_BINDINGS,
-    );
-
-    expect(res.status).toBe(302);
-    expect(res.headers.get("Location")).toMatch(/^\/chats\/[a-z0-9-]+$/);
   });
 });
 
