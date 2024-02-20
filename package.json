@@ -3,7 +3,8 @@
     "dev": "wrangler dev src/index.tsx",
     "deploy": "wrangler deploy --minify src/index.tsx",
     "test": "vitest run",
-    "biome-check": "npx @biomejs/biome check --apply ./src",
+    "biome-check": "npx @biomejs/biome check ./src",
+    "biome-apply": "npx @biomejs/biome check --apply ./src",
     "type-check": "tsc",
     "generate": "drizzle-kit generate:sqlite --schema=src/schema.ts"
   },
