@@ -1,6 +1,5 @@
 import { drizzle } from "drizzle-orm/d1";
 import { Hono } from "hono";
-import OpenAI from "openai";
 import { v4 as uuidv4 } from "uuid";
 import { BasicAuthMiddleware } from "./middleware/basic-auth";
 import { LayoutMiddleware } from "./middleware/layout";
@@ -14,7 +13,7 @@ import {
   getRoom,
   insertRoom,
 } from "./repositories/room-repository";
-import { Messages, Rooms } from "./schema";
+import { Messages } from "./schema";
 import type { AppEnv } from "./types";
 import { parseMarkdown } from "./utils/markdown";
 import { fetchCompletion } from "./utils/openai-client";

@@ -122,13 +122,13 @@ describe("GET /chats", () => {
     ]);
 
     const res = await app.request(
-        "/chats",
-        {
-          headers: {
-            Authorization: "Basic dGVzdDp0ZXN0",
-          },
+      "/chats",
+      {
+        headers: {
+          Authorization: "Basic dGVzdDp0ZXN0",
         },
-        MOCK_BINDINGS,
+      },
+      MOCK_BINDINGS,
     );
     expect(res.status).toBe(200);
     const actual = await res.text();
@@ -145,21 +145,20 @@ describe("GET /chats", () => {
 describe("GET /chats/new", () => {
   it("should create a new chat room and redirect", async () => {
     const res = await app.request(
-        "/chats/new",
-        {
-          method: "GET",
-          headers: {
-            Authorization: "Basic dGVzdDp0ZXN0",
-          },
+      "/chats/new",
+      {
+        method: "GET",
+        headers: {
+          Authorization: "Basic dGVzdDp0ZXN0",
         },
-        MOCK_BINDINGS,
+      },
+      MOCK_BINDINGS,
     );
 
     expect(res.status).toBe(302);
     expect(res.headers.get("Location")).toMatch(/^\/chats\/[a-z0-9-]+$/);
   });
 });
-
 
 describe("GET /chats/:roomId", () => {
   it("should return when basic auth failed", async () => {
