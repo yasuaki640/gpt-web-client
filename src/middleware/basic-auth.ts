@@ -1,7 +1,7 @@
 import { MiddlewareHandler } from "hono";
 import { basicAuth } from "hono/basic-auth";
 
-import { AppEnv, Bindings, Variables } from "../types";
+import { AppEnv } from "../types";
 
 export const BasicAuthMiddleware: MiddlewareHandler<AppEnv> = async (
   c,

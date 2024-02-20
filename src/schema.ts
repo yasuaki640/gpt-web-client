@@ -1,6 +1,5 @@
 import { sql } from "drizzle-orm";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { ChatCompletionRole } from "openai/src/resources/chat/completions";
 
 export const Rooms = sqliteTable("Rooms", {
   roomId: text("roomId").primaryKey(),

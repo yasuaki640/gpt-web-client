@@ -1,5 +1,4 @@
 import { DrizzleD1Database } from "drizzle-orm/d1";
-import OpenAI from "openai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../index";
 import {
