@@ -13,14 +13,14 @@ export const Room: FC<{ props: Props }> = ({ props }) => (
     <table>
       <thead>
         <tr>
-          <th>ID</th>
+          <th>{props.room.roomTitle ? "Title" : "ID"}</th>
           <th>Created</th>
           <th>Updated</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>{props.room.roomId}</td>
+          <td>{props.room.roomTitle ?? props.room.roomId}</td>
           <td>{props.room.roomCreated}</td>
           <td>{props.room.roomUpdated}</td>
         </tr>

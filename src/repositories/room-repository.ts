@@ -13,3 +13,11 @@ export const getRoom = async (db: DrizzleD1Database, roomId: string) => {
 export const getAllRooms = async (db: DrizzleD1Database) => {
   return db.select().from(Rooms).orderBy(desc(Rooms.roomUpdated)).all();
 };
+
+export const updateRoom = async (
+  db: DrizzleD1Database,
+  roomId: string,
+  room: typeof Rooms.$inferInsert,
+) => {
+  return db.update(Rooms).set(room).where(eq(Rooms.roomId, roomId)).execute();
+};

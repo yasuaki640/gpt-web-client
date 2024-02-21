@@ -12,6 +12,7 @@ import {
   getAllRooms,
   getRoom,
   insertRoom,
+  updateRoom,
 } from "./repositories/room-repository";
 import { Messages } from "./schema";
 import type { AppEnv } from "./types";
@@ -89,6 +90,17 @@ app.post("/chats/:roomId", async (c) => {
     content: m.message,
   }));
 
+  // 題名の生成
+  if (messageHistory.length === 0) {
+    const completion = await fetchCompletion(
+      c.var.openai,
+      `次の質問に対して、短くわかりやすい題名をつけてください。質問文: ${newMessage}`,
+    );
+    const roomTitle = completion.choices[0].message.content;
+    await updateRoom(db, roomId, { roomId, roomTitle });
+  }
+
+  // メッセージの生成と挿入
   const completion = await fetchCompletion(
     c.var.openai,
     newMessage,
