@@ -1,11 +1,8 @@
 import { FC } from "hono/dist/types/jsx";
+import {Rooms} from "../schema";
 
 type Props = {
-  rooms: {
-    roomId: string;
-    roomCreated: string;
-    roomUpdated: string;
-  }[];
+  rooms: (typeof Rooms.$inferSelect)[];
 };
 
 export const RoomList: FC<{ props: Props }> = ({ props }) => (
@@ -24,7 +21,7 @@ export const RoomList: FC<{ props: Props }> = ({ props }) => (
       {props.rooms.map((room) => (
         <tbody>
           <tr>
-            <td>{room.roomId}</td>
+            <td>{room.roomTitle}</td>
             <td>{room.roomCreated}</td>
             <td>{room.roomUpdated}</td>
             <td>

@@ -133,9 +133,8 @@ describe("GET /chats", () => {
     const actual = await res.text();
     expect(actual).toContain("test-roomId1");
     expect(actual).toContain("test-roomId2");
-    // @todo fix this
-    // expect(actual).toContain("test-roomTitle1");
-    // expect(actual).toContain("test-roomTitle2");
+    expect(actual).toContain("test-roomTitle1");
+    expect(actual).toContain("test-roomTitle2");
     expect(actual).toContain("2021-01-01T00:00:00Z");
     expect(actual).toContain("2033-02-01T00:00:00Z");
   });
@@ -201,8 +200,7 @@ describe("GET /chats/:roomId", () => {
 
     const actual = await res.text();
     expect(actual).toContain("test-room-id");
-    // @todo fix this
-    // expect(actual).toContain("test-room-title");
+    expect(actual).toContain("test-room-title");
     expect(actual).toContain("2021-01-01T00:00:00Z");
     expect(actual).toContain("2023-01-01T00:00:00Z");
   });
