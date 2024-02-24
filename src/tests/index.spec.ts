@@ -108,13 +108,13 @@ describe("GET /chats", () => {
     vi.mocked(getAllRooms).mockResolvedValue([
       {
         roomId: "test-roomId1",
-        roomTitle: "test-roomTitle1",
+        roomTitle: null,
         roomCreated: "2021-01-01T00:00:00Z",
         roomUpdated: "2021-01-02T00:00:00Z",
       },
       {
         roomId: "test-roomId2",
-        roomTitle: "test-roomTitle2",
+        roomTitle: "test-roomTitle2test-roomTitle2test-roomTitle2",
         roomCreated: "2033-02-01T00:00:00Z",
         roomUpdated: "2033-02-02T00:00:00Z",
       },
@@ -132,9 +132,8 @@ describe("GET /chats", () => {
     expect(res.status).toBe(200);
     const actual = await res.text();
     expect(actual).toContain("test-roomId1");
-    expect(actual).toContain("test-roomId2");
-    expect(actual).toContain("test-roomTitle1");
-    expect(actual).toContain("test-roomTitle2");
+    expect(actual).not.toContain("<td>test-roomId2</td>");
+    expect(actual).toContain("test-roomTitle2test-...");
     expect(actual).toContain("2021-01-01T00:00:00Z");
     expect(actual).toContain("2033-02-01T00:00:00Z");
   });

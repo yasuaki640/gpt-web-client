@@ -1,8 +1,18 @@
 import { FC } from "hono/dist/types/jsx";
-import {Rooms} from "../schema";
+import { Rooms } from "../schema";
 
 type Props = {
   rooms: (typeof Rooms.$inferSelect)[];
+};
+
+const TITLE_LENGTH = 20;
+const formatTitle = (room: typeof Rooms.$inferSelect) => {
+  if (!room.roomTitle) {
+    return room.roomId;
+  }
+  return room.roomTitle.length > TITLE_LENGTH
+    ? `${room.roomTitle.slice(0, TITLE_LENGTH)}...`
+    : room.roomTitle;
 };
 
 export const RoomList: FC<{ props: Props }> = ({ props }) => (
@@ -12,24 +22,24 @@ export const RoomList: FC<{ props: Props }> = ({ props }) => (
     <table>
       <thead>
         <tr>
-          <th>ID</th>
+          <th>Title</th>
           <th>Created</th>
           <th>Updated</th>
           <th>Link</th>
         </tr>
       </thead>
-      {props.rooms.map((room) => (
-        <tbody>
+      <tbody>
+        {props.rooms.map((room) => (
           <tr>
-            <td>{room.roomTitle}</td>
+            <td>{formatTitle(room)}</td>
             <td>{room.roomCreated}</td>
             <td>{room.roomUpdated}</td>
             <td>
               <a href={`/chats/${room.roomId}`}>Detail</a>
             </td>
           </tr>
-        </tbody>
-      ))}
+        ))}
+      </tbody>
     </table>
   </>
 );
