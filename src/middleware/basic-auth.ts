@@ -1,15 +1,12 @@
-import { MiddlewareHandler } from "hono";
 import { basicAuth } from "hono/basic-auth";
+import { createMiddleware } from "hono/factory";
 
 import { AppEnv } from "../types";
 
-export const BasicAuthMiddleware: MiddlewareHandler<AppEnv> = async (
-  c,
-  next,
-) => {
+export const BasicAuthMiddleware = createMiddleware<AppEnv>(async (c, next) => {
   const auth = basicAuth({
     username: c.env.USERNAME,
     password: c.env.PASSWORD,
   });
   return auth(c, next);
-};
+});
