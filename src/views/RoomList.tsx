@@ -1,18 +1,9 @@
 import { FC } from "hono/dist/types/jsx";
 import { Rooms } from "../schema";
+import { formatTitle } from "../utils/format-tilte";
 
 type Props = {
   rooms: (typeof Rooms.$inferSelect)[];
-};
-
-const TITLE_LENGTH = 20;
-const formatTitle = (room: typeof Rooms.$inferSelect) => {
-  if (!room.roomTitle) {
-    return room.roomId;
-  }
-  return room.roomTitle.length > TITLE_LENGTH
-    ? `${room.roomTitle.slice(0, TITLE_LENGTH)}...`
-    : room.roomTitle;
 };
 
 export const RoomList: FC<{ props: Props }> = ({ props }) => (

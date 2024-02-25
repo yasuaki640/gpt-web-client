@@ -1,5 +1,6 @@
 import { FC } from "hono/dist/types/jsx";
 import { Messages, Rooms } from "../schema";
+import { formatTitle } from "../utils/format-tilte";
 
 type Props = {
   room: typeof Rooms.$inferSelect;
@@ -8,19 +9,19 @@ type Props = {
 
 export const Room: FC<{ props: Props }> = ({ props }) => (
   <>
-    <h1>{props.room.roomId}</h1>
+    <h1>{formatTitle(props.room)}</h1>
     <a href={"/chats"}>Back</a>
     <table>
       <thead>
         <tr>
-          <th>{props.room.roomTitle ? "Title" : "ID"}</th>
+          <th>ID</th>
           <th>Created</th>
           <th>Updated</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>{props.room.roomTitle ?? props.room.roomId}</td>
+          <td>{props.room.roomId}</td>
           <td>{props.room.roomCreated}</td>
           <td>{props.room.roomUpdated}</td>
         </tr>
