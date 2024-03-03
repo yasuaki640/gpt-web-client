@@ -207,17 +207,15 @@ describe("GET /chats/:roomId", () => {
 
 describe("POST /chats/:roomId", () => {
   it("should accept a new message and return to the chat room", async () => {
-    const roomId = "test-room-id";
-    const message = "Hello, World!";
     mockGetRoom.mockResolvedValue({
-      roomId,
+      roomId: "test-room-id",
       roomTitle: "Test Room",
       roomCreated: "2021-01-01T00:00:00Z",
       roomUpdated: "2021-01-02T00:00:00Z",
     });
 
     const res = await app.request(
-      `/chats/${roomId}`,
+      "/chats/test-room-id",
       {
         method: "POST",
         body: new URLSearchParams({ message: "Hello, World!" }),
@@ -230,7 +228,7 @@ describe("POST /chats/:roomId", () => {
     );
 
     expect(res.status).toBe(302);
-    expect(res.headers.get("Location")).toBe(`/chats/${roomId}`);
+    expect(res.headers.get("Location")).toBe("/chats/test-room-id");
     expect(mockInsertMessage).toHaveBeenCalledWith(
       expect.any(DrizzleD1Database),
       expect.arrayContaining([
