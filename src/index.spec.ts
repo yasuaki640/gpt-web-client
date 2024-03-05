@@ -1,16 +1,16 @@
 import { DrizzleD1Database } from "drizzle-orm/d1";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import app from "../index";
+import app from "./index";
 import {
   getMessagesByRoomId,
   insertMessage,
-} from "../repositories/message-repository";
+} from "./repositories/message-repository";
 import {
   getAllRooms,
   getRoom,
   insertRoom,
-} from "../repositories/room-repository";
-import { fetchCompletion } from "../utils/openai-client";
+} from "./repositories/room-repository";
+import { fetchCompletion } from "./utils/openai-client";
 
 const MOCK_BINDINGS = {
   USERNAME: "test",
@@ -34,7 +34,7 @@ const { mockFetchCompletion } = vi.hoisted(() => ({
       choices: [{ message: { content: "test" } }],
     }),
 }));
-vi.mock("../utils/openai-client", () => ({
+vi.mock("./utils/openai-client", () => ({
   fetchCompletion: mockFetchCompletion,
 }));
 
@@ -68,7 +68,7 @@ const { mockInsertRoom, mockGetRoom, mockGetAllRooms } = vi.hoisted(() => ({
       },
     ]),
 }));
-vi.mock("../repositories/room-repository", () => ({
+vi.mock("./repositories/room-repository", () => ({
   insertRoom: mockInsertRoom,
   getRoom: mockGetRoom,
   getAllRooms: mockGetAllRooms,
@@ -94,7 +94,7 @@ const { mockGetMessagesByRoomId, mockInsertMessage } = vi.hoisted(() => ({
     ReturnType<typeof insertMessage>
   >(),
 }));
-vi.mock("../repositories/message-repository", () => ({
+vi.mock("./repositories/message-repository", () => ({
   getMessagesByRoomId: mockGetMessagesByRoomId,
   insertMessage: mockInsertMessage,
 }));
