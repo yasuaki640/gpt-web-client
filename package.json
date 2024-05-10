@@ -28,6 +28,6 @@
     "drizzle-kit": "^0.20.18",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0",
-    "wrangler": "^3.53.1"
+    "wrangler": "^3.55.0"
   }
 }
