@@ -11,5 +11,5 @@ export const fetchCompletion = async (
       ...(messageHistory ?? []),
       { role: "user", content: newMessage },
     ],
-    model: "gpt-4-turbo",
+    model: "gpt-4o",
   });
