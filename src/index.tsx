@@ -14,7 +14,7 @@ import {
   insertRoom,
   updateRoom,
 } from "./repositories/room-repository";
-import { Messages } from "./schema";
+import type { Messages } from "./schema";
 import type { AppEnv } from "./types";
 import { parseMarkdown } from "./utils/markdown";
 import { fetchCompletion } from "./utils/openai-client";

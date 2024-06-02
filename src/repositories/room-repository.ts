@@ -1,5 +1,5 @@
 import { desc, eq } from "drizzle-orm";
-import { DrizzleD1Database } from "drizzle-orm/d1";
+import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { Rooms } from "../schema";
 
 export const insertRoom = async (db: DrizzleD1Database, roomId: string) => {

@@ -1,6 +1,6 @@
 import { createMiddleware } from "hono/factory";
 import OpenAI from "openai";
-import { AppEnv } from "../types";
+import type { AppEnv } from "../types";
 
 export const OpenaiMiddleware = createMiddleware<AppEnv>(async (c, next) => {
   const client = new OpenAI({

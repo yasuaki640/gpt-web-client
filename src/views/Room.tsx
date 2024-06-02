@@ -1,5 +1,5 @@
-import { FC } from "hono/dist/types/jsx";
-import { Messages, Rooms } from "../schema";
+import type { FC } from "hono/dist/types/jsx";
+import type { Messages, Rooms } from "../schema";
 import { formatTitle } from "../utils/format-tilte";
 
 type Props = {
@@ -30,7 +30,7 @@ export const Room: FC<{ props: Props }> = ({ props }) => (
     <hr />
     {props.message.length === 0 && <p>No messages.</p>}
     {props.message.map((message) => (
-      <div>
+      <div key={message.messageId}>
         <p>{message.messageCreated}</p>
         <p>{message.sender}</p>
         {/* biome-ignore lint: lint/security/noDangerouslySetInnerHtml */}

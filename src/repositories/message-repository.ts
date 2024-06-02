@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { DrizzleD1Database } from "drizzle-orm/d1";
+import type { DrizzleD1Database } from "drizzle-orm/d1";
 import { Messages } from "../schema";
 
 export const insertMessage = async (

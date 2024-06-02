@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Rooms } from "../schema";
+import type { Rooms } from "../schema";
 import { formatTitle } from "./format-tilte";
 
 describe("formatTitle", () => {

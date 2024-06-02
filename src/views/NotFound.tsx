@@ -1,4 +1,4 @@
-import { FC } from "hono/dist/types/jsx";
+import type { FC } from "hono/dist/types/jsx";
 
 type Props = { message?: string };
 

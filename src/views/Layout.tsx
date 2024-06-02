@@ -1,4 +1,4 @@
-import { FC } from "hono/dist/types/jsx";
+import type { FC } from "hono/dist/types/jsx";
 
 export const Layout: FC = ({ children }) => (
   <html lang={"ja"}>

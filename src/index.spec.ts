@@ -1,16 +1,16 @@
 import { DrizzleD1Database } from "drizzle-orm/d1";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "./index";
-import {
+import type {
   getMessagesByRoomId,
   insertMessage,
 } from "./repositories/message-repository";
 import {
   getAllRooms,
-  getRoom,
-  insertRoom,
+  type getRoom,
+  type insertRoom,
 } from "./repositories/room-repository";
-import { fetchCompletion } from "./utils/openai-client";
+import type { fetchCompletion } from "./utils/openai-client";
 
 const MOCK_BINDINGS = {
   USERNAME: "test",

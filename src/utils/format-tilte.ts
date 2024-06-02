@@ -1,4 +1,4 @@
-import { Rooms } from "../schema";
+import type { Rooms } from "../schema";
 
 export const formatTitle = (room: typeof Rooms.$inferSelect, len = 20) => {
   if (!room.roomTitle) {

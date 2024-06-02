@@ -1,5 +1,5 @@
-import { FC } from "hono/dist/types/jsx";
-import { Rooms } from "../schema";
+import type { FC } from "hono/dist/types/jsx";
+import type { Rooms } from "../schema";
 import { formatTitle } from "../utils/format-tilte";
 
 type Props = {
@@ -21,7 +21,7 @@ export const RoomList: FC<{ props: Props }> = ({ props }) => (
       </thead>
       <tbody>
         {props.rooms.map((room) => (
-          <tr>
+          <tr key={room.roomId}>
             <td>{formatTitle(room)}</td>
             <td>{room.roomCreated}</td>
             <td>{room.roomUpdated}</td>
