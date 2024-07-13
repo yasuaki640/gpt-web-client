@@ -39,8 +39,10 @@ export const Room: FC<{ props: Props }> = ({ props }) => (
       </div>
     ))}
     <form method={"post"} action={`/chats/${props.room.roomId}`}>
-      <textarea name={"message"} />
-      <button type={"submit"}>Send</button>
+      <textarea name={"message"} style={{ height: "200px" }} />
+      <div>
+        <button type={"submit"}>Send</button>
+      </div>
     </form>
   </>
 );
