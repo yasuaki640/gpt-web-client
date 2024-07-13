@@ -1,4 +1,4 @@
-import type { FC } from "hono/dist/types/jsx";
+import type { FC } from "hono/jsx";
 import type { Messages, Rooms } from "../schema";
 import { formatTitle } from "../utils/format-tilte";
 
