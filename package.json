@@ -9,25 +9,25 @@
     "generate": "drizzle-kit generate:sqlite --schema=src/schema.ts"
   },
   "dependencies": {
-    "drizzle-orm": "^0.30.10",
-    "hono": "^4.3.3",
-    "openai": "^4.42.0",
+    "drizzle-orm": "^0.32.0",
+    "hono": "^4.4.13",
+    "openai": "^4.52.7",
     "rehype-sanitize": "^6.0.0",
     "rehype-stringify": "^10.0.0",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.0",
-    "unified": "^11.0.4",
-    "uuid": "^9.0.1"
+    "unified": "^11.0.5",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.7.3",
-    "@cloudflare/workers-types": "^4.20240502.0",
-    "@types/uuid": "^9.0.8",
-    "@vitest/coverage-v8": "^1.6.0",
-    "better-sqlite3": "^9.6.0",
-    "drizzle-kit": "^0.20.18",
-    "typescript": "^5.4.5",
-    "vitest": "^1.6.0",
-    "wrangler": "^3.55.0"
+    "@biomejs/biome": "^1.8.3",
+    "@cloudflare/workers-types": "^4.20240712.0",
+    "@types/uuid": "^10.0.0",
+    "@vitest/coverage-v8": "^2.0.2",
+    "better-sqlite3": "^11.1.2",
+    "drizzle-kit": "^0.23.0",
+    "typescript": "^5.5.3",
+    "vitest": "^2.0.2",
+    "wrangler": "^3.64.0"
   }
 }
