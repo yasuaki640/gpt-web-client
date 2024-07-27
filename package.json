@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "drizzle-orm": "^0.30.10",
-    "hono": "^4.3.3",
+    "hono": "^4.5.2",
     "openai": "^4.42.0",
     "rehype-sanitize": "^6.0.0",
     "rehype-stringify": "^10.0.0",
