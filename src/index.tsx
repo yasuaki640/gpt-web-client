@@ -94,7 +94,7 @@ app.post("/chats/:roomId", async (c) => {
   if (messageHistory.length === 0) {
     const completion = await fetchCompletion(
       c.var.openai,
-      `次の質問に対して、短くわかりやすい題名をつけてください。質問文: ${newMessage}`,
+      `次の質問に対して、短くわかりやすい題名をつけてください。「${newMessage}」`,
     );
     const roomTitle = completion.choices[0].message.content;
     await updateRoom(db, roomId, { roomId, roomTitle });
