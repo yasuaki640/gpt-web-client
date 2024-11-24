@@ -95,6 +95,8 @@ app.post("/chats/:roomId", async (c) => {
     const completion = await fetchCompletion(
       c.var.openai,
       `次の質問に対して、短くわかりやすい題名をつけてください。「${newMessage}」`,
+      undefined,
+      { model: "gpt-4o-mini" },
     );
     const roomTitle = completion.choices[0].message.content;
     await updateRoom(db, roomId, { roomId, roomTitle });
@@ -105,6 +107,7 @@ app.post("/chats/:roomId", async (c) => {
     c.var.openai,
     newMessage,
     messageHistory,
+    { model: "gpt-4o" }, // MEMO: o1を使いたいが、日本語で返してくれないため、引き続き4oを使う
   );
   const resMessage = completion.choices.map<typeof Messages.$inferInsert>(
     (c) => ({

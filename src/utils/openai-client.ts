@@ -5,11 +5,13 @@ export const fetchCompletion = async (
   openai: OpenAI,
   newMessage: string,
   messageHistory?: ChatCompletionMessageParam[],
+  bodyOverride?: Partial<OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming>,
 ) =>
   openai.chat.completions.create({
     messages: [
       ...(messageHistory ?? []),
       { role: "user", content: newMessage },
     ],
-    model: "gpt-4o",
+    model: "o1-preview",
+    ...bodyOverride,
   });
