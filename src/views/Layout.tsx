@@ -1,6 +1,6 @@
-import type { FC } from "hono/jsx";
+import type { PropsWithChildren } from "hono/jsx";
 
-export const Layout: FC = ({ children }) => (
+export const Layout = ({ children }: PropsWithChildren) => (
   <html lang={"ja"}>
     <head>
       <link
