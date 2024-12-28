@@ -107,7 +107,7 @@ app.post("/chats/:roomId", async (c) => {
     c.var.openai,
     newMessage,
     messageHistory,
-    { model: "gpt-4o" }, // MEMO: o1を使いたいが、日本語で返してくれないため、引き続き4oを使う
+    { model: "o1-preview" }, // MEMO: o1を使いたいが、日本語で返してくれないため、引き続き4oを使う
   );
   const resMessage = completion.choices.map<typeof Messages.$inferInsert>(
     (c) => ({
